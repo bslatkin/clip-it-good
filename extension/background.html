@@ -42,7 +42,11 @@
         var albumId = pieces[1];
         chrome.contextMenus.create({
           title: 'Clip to album: ' + value,
-          contexts: ['image']
+          contexts: ['image'],
+          onclick: function(data, tab) {
+            console.log('data is');
+            console.log(data);
+          }
         });
       });
     });
