@@ -37,6 +37,7 @@
       border-bottom: 1px solid #BBB;
       background-color: #EEE;
       font-size: 0.8em;
+      cursor: pointer;
     }
 
     .album-controls {
@@ -53,32 +54,18 @@
     'picasa': 'Picasa Web Albums'
   };
 
-  // Preferences
-  var ALBUM_CONFIG = {};  // 'type:id' -> 'name'
-
-  function loadAlbumConfig() {
-    var newAlbumConfig = localStorage.getItem('config:albums');
-    if (newAlbumConfig) {
-      ALBUM_CONFIG = $.parseJSON(newAlbumConfig);
-    }
-  }
-
-  function saveAlbumConfig() {
-    localStorage.setItem('config:albums', JSON.stringify(ALBUM_CONFIG));
-  }
-
   // Album listing
   function populateAlbumList() {
     var connectedAlbums = $('#connected-list');
     connectedAlbums.contents().remove();
 
-    loadAlbumConfig();
-    if ($.isEmptyObject(ALBUM_CONFIG)) {
+    BG.loadAlbumConfig();
+    if ($.isEmptyObject(BG.ALBUM_CONFIG)) {
       connectedAlbums.text('No albums connected.');
       return;
     }
 
-    $.each(ALBUM_CONFIG, function(key, value) {
+    $.each(BG.ALBUM_CONFIG, function(key, value) {
       var pieces = key.split(':');
       var album = $('<div class="connected-album">');
       album.addClass('album-type-' + pieces[0]);  // albumType
@@ -112,10 +99,11 @@
           var selectedAlbums = $('#select-album>.album-list>.ui-selected');
           $.each(selectedAlbums, function(index, item) {
             var key = albumType + ':' + $(item).attr('album-id');
-            ALBUM_CONFIG[key] = $(item).text();
+            BG.ALBUM_CONFIG[key] = $(item).text();
           });
-          saveAlbumConfig();
+          BG.saveAlbumConfig();
           populateAlbumList();
+          BG.setupMenus();
           $(this).dialog('close');
         },
         'Cancel': function() {
@@ -174,7 +162,7 @@ Connecting an album to <em>Clip It Good</em> will require giving this extension 
 <div id="select-album" style="display: none;">
   <div class="album-type"></div>
   <ol class="album-list"></ol>
-  <div class="album-controls">Drag to select multiple or use Control/&#x2318; for specific items.</div>
+  <div class="album-controls">Drag to select multiple or click while holding Control/&#x2318; for specific items.</div>
 </div>
 
 </body>

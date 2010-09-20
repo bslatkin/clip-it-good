@@ -6,16 +6,51 @@
 
 <script type="text/javascript" charset="utf-8">
 
-var OAUTH = ChromeExOAuth.initBackgroundPage({
-  'request_url' : 'https://www.google.com/accounts/OAuthGetRequestToken',
-  'authorize_url' : 'https://www.google.com/accounts/OAuthAuthorizeToken',
-  'access_url' : 'https://www.google.com/accounts/OAuthGetAccessToken',
-  'consumer_key' : 'anonymous',
-  'consumer_secret' : 'anonymous',
-  'scope' : 'http://picasaweb.google.com/data/',
-  'app_name' : 'Clip It Good: Chrome Extension'
-});
+  var OAUTH = ChromeExOAuth.initBackgroundPage({
+    'request_url' : 'https://www.google.com/accounts/OAuthGetRequestToken',
+    'authorize_url' : 'https://www.google.com/accounts/OAuthAuthorizeToken',
+    'access_url' : 'https://www.google.com/accounts/OAuthGetAccessToken',
+    'consumer_key' : 'anonymous',
+    'consumer_secret' : 'anonymous',
+    'scope' : 'http://picasaweb.google.com/data/',
+    'app_name' : 'Clip It Good: Chrome Extension'
+  });
 
+
+  // Preferences
+  var ALBUM_CONFIG = {};  // 'type:id' -> 'name'
+
+  function loadAlbumConfig() {
+    var newAlbumConfig = localStorage.getItem('config:albums');
+    if (newAlbumConfig) {
+      ALBUM_CONFIG = $.parseJSON(newAlbumConfig);
+    }
+  }
+
+  function saveAlbumConfig() {
+    localStorage.setItem('config:albums', JSON.stringify(ALBUM_CONFIG));
+  }
+
+  function setupMenus() {
+    loadAlbumConfig();
+
+    chrome.contextMenus.removeAll(function() {
+      // TODO: Sort the list somehow?
+      $.each(ALBUM_CONFIG, function(key, value) {
+        var pieces = key.split(':');
+        var albumType = pieces[0];
+        var albumId = pieces[1];
+        chrome.contextMenus.create({
+          title: 'Clip to album: ' + value,
+          contexts: ['image']
+        });
+      });
+    });
+  }
+
+  $(document).ready( function() {
+    setupMenus();
+  });
 </script>
 
 </head>
