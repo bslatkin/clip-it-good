@@ -1,0 +1,24 @@
+<html>
+<head>
+<script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+<script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
+<script type="text/javascript" src="chrome_ex_oauth.js"></script>
+
+<script type="text/javascript" charset="utf-8">
+
+var OAUTH = ChromeExOAuth.initBackgroundPage({
+  'request_url' : 'https://www.google.com/accounts/OAuthGetRequestToken',
+  'authorize_url' : 'https://www.google.com/accounts/OAuthAuthorizeToken',
+  'access_url' : 'https://www.google.com/accounts/OAuthGetAccessToken',
+  'consumer_key' : 'anonymous',
+  'consumer_secret' : 'anonymous',
+  'scope' : 'http://picasaweb.google.com/data/',
+  'app_name' : 'Clip It Good: Chrome Extension'
+});
+
+</script>
+
+</head>
+<body>
+</body>
+</html>

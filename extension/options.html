@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+  <title>Clip It Good: Configure options</title>
+  <link rel="stylesheet" href="jquery-ui-1.8.5.custom.css" type="text/css" charset="utf-8">
+  <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
+  <script type="text/javascript" src="json2.js"></script>
+  <script type="text/javascript" src="jquery-ui-1.8.5.custom.min.js"></script>
+  <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
+  <script type="text/javascript" src="chrome_ex_oauth.js"></script>
+
+  <style type="text/css">
+    .album-type {
+      margin-bottom: 1em;
+    }
+
+    .album-list {
+      height: 250px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      border: 1px solid #555;
+    }
+    .album-list .ui-selecting {
+      background: #FECA40;
+    }
+    .album-list .ui-selected {
+      background: #F39814;
+      color: #FFFFFF;
+    }
+    .album-list li {
+      margin: 0;
+      padding: 5px;
+      border-top: 1px solid #DDD;
+      border-bottom: 1px solid #BBB;
+      background-color: #EEE;
+      font-size: 0.8em;
+    }
+
+    .album-controls {
+      margin-top: 1em;
+    }
+  </style>
+
+  <script type="text/javascript" charset="utf-8">
+
+  // Constants for various album types.
+  var BG = chrome.extension.getBackgroundPage();
+  var PICASA = 'picasa';
+  var ALBUM_TYPE_STRING = {
+    'picasa': 'Picasa Web Albums'
+  };
+
+  // Preferences
+  var ALBUM_CONFIG = {};  // 'type:id' -> 'name'
+
+  function loadAlbumConfig() {
+    var newAlbumConfig = localStorage.getItem('config:albums');
+    if (newAlbumConfig) {
+      ALBUM_CONFIG = $.parseJSON(newAlbumConfig);
+    }
+  }
+
+  function saveAlbumConfig() {
+    localStorage.setItem('config:albums', JSON.stringify(ALBUM_CONFIG));
+  }
+
+  // Album listing
+  function populateAlbumList() {
+    var connectedAlbums = $('#connected-list');
+    connectedAlbums.contents().remove();
+
+    loadAlbumConfig();
+    if ($.isEmptyObject(ALBUM_CONFIG)) {
+      connectedAlbums.text('No albums connected.');
+      return;
+    }
+
+    $.each(ALBUM_CONFIG, function(key, value) {
+      var pieces = key.split(':');
+      var album = $('<div class="connected-album">');
+      album.addClass('album-type-' + pieces[0]);  // albumType
+      album.text(value);
+      connectedAlbums.append(album);
+    });
+  }
+
+  // Album selection
+  function renderAlbumSelector(albumIdToName, albumType) {
+    var selectAlbumDiv = $('#select-album');
+    selectAlbumDiv.children('.album-type').text(ALBUM_TYPE_STRING[albumType]);
+
+    var albumList = selectAlbumDiv.children('.album-list');
+    albumList.contents().remove();
+    $.each(albumIdToName, function(albumId, albumName) {
+      var albumEntry = $('<li>');
+      albumEntry.attr('album-id', albumId);
+      albumEntry.text(albumName);
+      albumList.append(albumEntry);
+    });
+    albumList.selectable();
+
+    selectAlbumDiv.dialog({
+      modal: true,
+      resizable: false,
+      width: 550,
+      title: 'Connect an album',
+      buttons: {
+        'Add': function() {
+          var selectedAlbums = $('#select-album>.album-list>.ui-selected');
+          $.each(selectedAlbums, function(index, item) {
+            var key = albumType + ':' + $(item).attr('album-id');
+            ALBUM_CONFIG[key] = $(item).text();
+          });
+          saveAlbumConfig();
+          populateAlbumList();
+          $(this).dialog('close');
+        },
+        'Cancel': function() {
+          $(this).dialog('close');
+        }
+      }
+    });
+  }
+
+  function picasaListAlbumsDone(jsonData) {
+    var albumIdToName = {};
+    $.each(jsonData.feed.entry, function(index, entryData) {
+      albumIdToName[entryData['gphoto$id']['$t']] = entryData.title['$t'];
+    });
+    renderAlbumSelector(albumIdToName, PICASA);
+  }
+
+  function addPicasaAlbum() {
+    BG.OAUTH.authorize(function() {
+      BG.OAUTH.sendSignedRequest(
+        'http://picasaweb.google.com/data/feed/api/user/default',
+        function(resp, xhr) {
+          // TODO: check for errors
+          var jsonResponse = $.parseJSON(resp);
+          picasaListAlbumsDone(jsonResponse);
+        },
+        {method: 'GET', parameters: {'alt': 'json'}})
+    });
+  }
+
+  $(document).ready(function() {
+    $('#add-picasa').click(addPicasaAlbum);
+    populateAlbumList();
+  });
+  </script>
+</head>
+<body>
+
+<h1>Clip It Good: Configure options</h1>
+
+<h2>Connected Albums</h2>
+<div id="connected-list">
+  Loading...
+</div>
+
+<div class="add-album-control">
+  <button id="add-picasa" type="button">Add Picasa Web Album</button>
+</div>
+
+<h2>Security information</h2>
+<div class="security-detail">
+Connecting an album to <em>Clip It Good</em> will require giving this extension permission to access your albums, even when you are <strong>not logged into your account</strong>. At any time you may revoke access to this extension by using the authorized access control panel for each provider: <a href="https://www.google.com/accounts/IssuedAuthSubTokens">Google Accounts</a>.
+</div>
+
+<!-- hidden divs used by interactive stuff -->
+<div id="select-album" style="display: none;">
+  <div class="album-type"></div>
+  <ol class="album-list"></ol>
+  <div class="album-controls">Drag to select multiple or use Control/&#x2318; for specific items.</div>
+</div>
+
+</body>
+</html>
