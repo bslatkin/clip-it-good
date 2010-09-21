@@ -16,6 +16,11 @@
     'app_name' : 'Clip It Good: Chrome Extension'
   });
 
+  // Constants for various album types.
+  var PICASA = 'picasa';
+  var ALBUM_TYPE_STRING = {
+    'picasa': 'Picasa Web Albums'
+  };
 
   // Preferences
   var ALBUM_CONFIG = {};  // 'type:id' -> 'name'
@@ -31,22 +36,48 @@
     localStorage.setItem('config:albums', JSON.stringify(ALBUM_CONFIG));
   }
 
+  // Sort albums by name.
+  function getSortedAlbums(albumIdNameDict) {
+    var albumIdNameArray = [];
+    $.each(albumIdNameDict, function(id, name) {
+      albumIdNameArray.push({'id': id, 'name': name});
+    });
+    albumIdNameArray.sort(function(a, b) {
+      if (a['name'] < b['name']) {
+        return -1;
+      } else if (a['name'] > b['name']) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    return albumIdNameArray;
+  }
+
   function setupMenus() {
     loadAlbumConfig();
 
     chrome.contextMenus.removeAll(function() {
       // TODO: Sort the list somehow?
-      $.each(ALBUM_CONFIG, function(key, value) {
-        var pieces = key.split(':');
-        var albumType = pieces[0];
-        var albumId = pieces[1];
+      $.each(ALBUM_CONFIG, function(albumType, albumIdNameDict) {
         chrome.contextMenus.create({
-          title: 'Clip to album: ' + value,
-          contexts: ['image'],
-          onclick: function(data, tab) {
-            console.log('data is');
-            console.log(data);
-          }
+          title: ALBUM_TYPE_STRING[albumType],
+          contexts: ['image']
+        });
+        chrome.contextMenus.create({
+          type: 'separator',
+          contexts: ['image']
+        });
+
+        $.each(getSortedAlbums(albumIdNameDict), function(index, albumDict) {
+          chrome.contextMenus.create({
+            title: albumDict.name,
+            contexts: ['image'],
+            onclick: function(data, tab) {
+              console.log('data is');
+              console.log(data);
+            }
+          });
         });
       });
     });
