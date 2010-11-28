@@ -85,55 +85,45 @@
   }
 
   function handleMenuClick(albumName, albumId, data, tab) {
-    // ** Image tag based one; doesn't work cuz there's no binary type.
-    // var img = document.createElement('img');
-    // img.onload = function() {
-    //   var canvas = document.createElement('canvas');
-    //   canvas.width = img.width;
-    //   canvas.height = img.height;
-    //   canvas.getContext('2d').drawImage(img, 0, 0);
-    // 
-    //   var dataUrl = canvas.toDataURL();
-    //   var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
-    // 
-    //   var builder = new BlobBuilder();
-    //   builder.append(Base64.decode(dataUrlAdjusted));
-    //   console.log(builder.getBlob().slice(0, 100));
-    // 
-    //   function complete(resp, xhr) {
-    //     // TODO check for errors
-    //     console.log(resp);
-    //   }
-    // 
-    //   OAUTH.authorize(function() {
-    //     OAUTH.sendSignedRequest(
-    //       'http://picasaweb.google.com/data/feed/api/' +
-    //       'user/default/albumid/' + albumId,
-    //       complete,
-    //       {
-    //         method: 'POST',
-    //         headers: {
-    //           'Content-Type': 'image/png',
-    //           'Content-Encoding': 'base64',
-    //           'Slug': data.srcUrl
-    //         },
-    //         parameters: {
-    //           alt: 'json'
-    //         },
-    //         body: builder.getBlob()
-    //       }
-    //     );
-    //   });
-    // }  // end onload
-    // 
-    // img.src = data.srcUrl;
+    var img = document.createElement('img');
+    img.onload = function() {
+      var canvas = document.createElement('canvas');
+      canvas.width = img.width;
+      canvas.height = img.height;
+      canvas.getContext('2d').drawImage(img, 0, 0);
 
-    var req = new XMLHttpRequest();
-      req.open('GET', url, false);
-      req.overrideMimeType('text/plain; charset=x-user-defined');
-      req.send(null);
-      if (req.status != 200) return '';
-      return req.responseText;
+      var dataUrl = canvas.toDataURL();
+      var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
+
+      var builder = new BlobBuilder();
+      builder.append(Base64.decode(dataUrlAdjusted).buffer);
+
+      function complete(resp, xhr) {
+        // TODO check for errors
+        console.log(resp);
+      }  // end complete
+
+      OAUTH.authorize(function() {
+        OAUTH.sendSignedRequest(
+          'http://picasaweb.google.com/data/feed/api/' +
+          'user/default/albumid/' + albumId,
+          complete,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'image/png',
+              'Slug': data.srcUrl
+            },
+            parameters: {
+              alt: 'json'
+            },
+            body: builder.getBlob('image/png')
+          }
+        );
+      });
+    }  // end onload
+
+    img.src = data.srcUrl;
   }
 
   $(document).ready( function() {
