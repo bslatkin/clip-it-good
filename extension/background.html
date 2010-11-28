@@ -85,6 +85,12 @@
   }
 
   function handleMenuClick(albumName, albumId, data, tab) {
+    chrome.pageAction.setTitle({
+      tabId: tab.id,
+      title: 'Clip It Good: Uploading (' + data.srcUrl + ')'
+    });
+    chrome.pageAction.show(tab.id);
+
     var img = document.createElement('img');
     img.onload = function() {
       var canvas = document.createElement('canvas');
@@ -99,8 +105,14 @@
       builder.append(Base64.decode(dataUrlAdjusted).buffer);
 
       function complete(resp, xhr) {
+        chrome.pageAction.hide(tab.id);
         // TODO check for errors
         console.log(resp);
+        webkitNotifications.createNotification(
+          'scissors.gif',
+          'Clip It Good: Upload complete',
+          'Image (' + data.srcUrl + ') uploaded to album "' + albumName + '"'
+        ).show();
       }  // end complete
 
       OAUTH.authorize(function() {
