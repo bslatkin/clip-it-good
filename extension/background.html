@@ -1,5 +1,6 @@
 <html>
 <head>
+<script type="text/javascript" src="base64.js"></script>
 <script type="text/javascript" src="jquery-1.4.2.min.js"></script>
 <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
 <script type="text/javascript" src="chrome_ex_oauth.js"></script>
@@ -74,13 +75,65 @@
             title: albumDict.name,
             contexts: ['image'],
             onclick: function(data, tab) {
-              console.log('data is');
-              console.log(data);
+              return handleMenuClick(
+                  albumDict.name, albumDict.id, data, tab)
             }
           });
         });
       });
     });
+  }
+
+  function handleMenuClick(albumName, albumId, data, tab) {
+    // ** Image tag based one; doesn't work cuz there's no binary type.
+    // var img = document.createElement('img');
+    // img.onload = function() {
+    //   var canvas = document.createElement('canvas');
+    //   canvas.width = img.width;
+    //   canvas.height = img.height;
+    //   canvas.getContext('2d').drawImage(img, 0, 0);
+    // 
+    //   var dataUrl = canvas.toDataURL();
+    //   var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
+    // 
+    //   var builder = new BlobBuilder();
+    //   builder.append(Base64.decode(dataUrlAdjusted));
+    //   console.log(builder.getBlob().slice(0, 100));
+    // 
+    //   function complete(resp, xhr) {
+    //     // TODO check for errors
+    //     console.log(resp);
+    //   }
+    // 
+    //   OAUTH.authorize(function() {
+    //     OAUTH.sendSignedRequest(
+    //       'http://picasaweb.google.com/data/feed/api/' +
+    //       'user/default/albumid/' + albumId,
+    //       complete,
+    //       {
+    //         method: 'POST',
+    //         headers: {
+    //           'Content-Type': 'image/png',
+    //           'Content-Encoding': 'base64',
+    //           'Slug': data.srcUrl
+    //         },
+    //         parameters: {
+    //           alt: 'json'
+    //         },
+    //         body: builder.getBlob()
+    //       }
+    //     );
+    //   });
+    // }  // end onload
+    // 
+    // img.src = data.srcUrl;
+
+    var req = new XMLHttpRequest();
+      req.open('GET', url, false);
+      req.overrideMimeType('text/plain; charset=x-user-defined');
+      req.send(null);
+      if (req.status != 200) return '';
+      return req.responseText;
   }
 
   $(document).ready( function() {
