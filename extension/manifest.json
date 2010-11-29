@@ -15,7 +15,11 @@
       "contextMenus"
       ],
   "page_action": {
-    "default_icon": "scissors.gif"
+    "default_icon": "icon19.png"
     },
-  "minimum_chrome_version": "9.0"
+  "minimum_chrome_version": "9.0",
+  "icons": {
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
 }
