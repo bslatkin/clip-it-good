@@ -5,7 +5,6 @@
   "background_page": "background.html",
   "options_page": "options.html",
   "permissions": [
-      "notifications",
       "tabs",
       "http://*/*",
       "https://*/*",
@@ -17,5 +16,6 @@
       ],
   "page_action": {
     "default_icon": "scissors.gif"
-    }
+    },
+  "minimum_chrome_version": "9.0"
 }

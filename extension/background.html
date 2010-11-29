@@ -59,7 +59,8 @@
     loadAlbumConfig();
 
     chrome.contextMenus.removeAll(function() {
-      // TODO: Sort the list somehow?
+      // TODO: Sort the list somehow? Or is it already pre-sorted because
+      // of the way the albums are presented during configuration?
       $.each(ALBUM_CONFIG, function(albumType, albumIdNameDict) {
         chrome.contextMenus.create({
           title: ALBUM_TYPE_STRING[albumType],
@@ -87,7 +88,7 @@
   function handleMenuClick(albumName, albumId, data, tab) {
     chrome.pageAction.setTitle({
       tabId: tab.id,
-      title: 'Clip It Good: Uploading (' + data.srcUrl + ')'
+      title: 'Clip It Good: Uploading (' + data.srcUrl.substr(0, 100) + ')'
     });
     chrome.pageAction.show(tab.id);
 
@@ -106,18 +107,15 @@
 
       function complete(resp, xhr) {
         chrome.pageAction.hide(tab.id);
-        // TODO check for errors
-        console.log(resp);
-        webkitNotifications.createNotification(
-          'scissors.gif',
-          'Clip It Good: Upload complete',
-          'Image (' + data.srcUrl + ') uploaded to album "' + albumName + '"'
-        ).show();
+        if (!(xhr.status >= 200 && xhr.status <= 299)) {
+          alert('Error: Response status = ' + xhr.status +
+                ', response body = "' + xhr.responseText + '"');
+        }
       }  // end complete
 
       OAUTH.authorize(function() {
         OAUTH.sendSignedRequest(
-          'http://picasaweb.google.com/data/feed/api/' +
+          'http://picasaeb.google.com/data/feed/api/' +
           'user/default/albumid/' + albumId,
           complete,
           {
