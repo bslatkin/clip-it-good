@@ -57,6 +57,7 @@
       
     }
     .add-album-control {
+      margin-top: 1em;
     }
 
     /* other */
@@ -91,7 +92,23 @@
       $.each(BG.getSortedAlbums(albumIdNameDict), function(index, albumDict) {
         var album = $('<li class="connected-album">');
         album.attr('album-id', albumDict['id']);
-        album.text(albumDict['name']);
+        album.text(albumDict['name'] + ' ');
+        var removeLink = $('<a href="">').text('(Remove)');
+        removeLink.click(function(event) {
+          delete BG.ALBUM_CONFIG[albumType][albumDict['id']];
+          if ($.isEmptyObject(BG.ALBUM_CONFIG[albumType])) {
+            delete BG.ALBUM_CONFIG[albumType];
+          }
+          album.remove();
+
+          BG.saveAlbumConfig();
+          populateAlbumList();
+          BG.setupMenus();
+
+          event.preventDefault();
+          return false;
+        });
+        album.append(removeLink);
         albumSection.append(album);
       });
 
