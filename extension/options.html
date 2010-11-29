@@ -14,6 +14,10 @@
       font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
     }
 
+    #about {
+      max-width: 400px;
+    }
+
     /* Pop-up album selection */
     .album-type {
       margin-bottom: 1em;
@@ -193,7 +197,6 @@
 </head>
 <body>
 
-<img src="icon128.png" width="128" height="128">
 <h1>Clip It Good: Configure options</h1>
 
 <div id="connected-list">
@@ -207,6 +210,23 @@
 <h2>Security information</h2>
 <div class="security-detail">
 Connecting an album to <em>Clip It Good</em> will require giving this extension permission to access your albums even when you are <strong>not logged into your account</strong>. At any time you may revoke access to this extension by using the authorized access control panel for each photo hosting provider: <a href="https://www.google.com/accounts/IssuedAuthSubTokens">Google Accounts</a>
+</div>
+
+<h2>About</h2>
+<div id="about">
+  <img src="icon128.png"/>
+  <p>
+     Brett Slatkin, &copy;2010
+     <br>
+    <a href="http://www.google.com/profiles/bslatkin/contactme">Email</a>
+  </p>
+  <p>
+    Extension and source licensed under the
+    <a href="http://www.apache.org/licenses/LICENSE-2.0">Apache License,
+    Version 2.0</a>. Uses <a href="http://jqueryui.com/">jQuery UI</a> (MIT/GPL), 
+    <a href="http://www.json.org/js.html">json2 parser</a> (free domain), and
+<a href="http://code.google.com/p/javascriptbase64/">Fred Palmer's Base64</a> (BSD compat).
+  </p>
 </div>
 
 <!-- hidden divs used by interactive stuff -->
