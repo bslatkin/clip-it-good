@@ -1,6 +1,6 @@
 {
   "name": "Clip It Good",
-  "version": "0.1",
+  "version": "0.1.1",
   "description": "Save webpage clippings and images to your Picasa Web Albums.",
   "background_page": "background.html",
   "options_page": "options.html",
