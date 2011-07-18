@@ -102,7 +102,7 @@
       var dataUrl = canvas.toDataURL();
       var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
 
-      var builder = new BlobBuilder();
+      var builder = new WebKitBlobBuilder();
       builder.append(Base64.decode(dataUrlAdjusted).buffer);
 
       function complete(resp, xhr) {
