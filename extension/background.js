@@ -151,6 +151,16 @@ function handleMenuClick(albumName, albumId, data, tab) {
   img.src = data.srcUrl;
 }
 
+function firstTimeOptions() {
+  if (localStorage.getItem('config:installed') ||
+      localStorage.getItem('config:config')) {
+    return;
+  }
+  localStorage.setItem('config:installed', true);
+  chrome.tabs.create({url: 'options.html'});
+}
+
 $(document).ready( function() {
   setupMenus();
+  firstTimeOptions();
 });
