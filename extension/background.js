@@ -71,7 +71,8 @@ function setupMenus() {
     $.each(ALBUM_CONFIG, function(albumType, albumIdNameDict) {
       chrome.contextMenus.create({
         title: ALBUM_TYPE_STRING[albumType],
-        contexts: ['image']
+        contexts: ['image'],
+        enabled: false
       });
       chrome.contextMenus.create({
         type: 'separator',
@@ -106,11 +107,17 @@ function handleMenuClick(albumName, albumId, data, tab) {
     canvas.height = img.height;
     canvas.getContext('2d').drawImage(img, 0, 0);
 
+    // Picasa doesn't like
+    var filename = data.srcUrl;
+    if (filename.length > 255) {
+      filename = data.srcUrl.substr(0, 255);
+    }
+
     var dataUrl = canvas.toDataURL();
     var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
 
     var blob = new Blob(
-        [Base64.decode(dataUrlAdjusted).buffer],
+        [new Uint8Array(Base64.decode(dataUrlAdjusted).buffer)],
         {type: 'image/png'});
 
     function complete(resp, xhr) {
@@ -130,7 +137,7 @@ function handleMenuClick(albumName, albumId, data, tab) {
           method: 'POST',
           headers: {
             'Content-Type': 'image/png',
-            'Slug': data.srcUrl
+            'Slug': filename
           },
           parameters: {
             alt: 'json'
