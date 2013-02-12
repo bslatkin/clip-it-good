@@ -1,4 +1,4 @@
-Right click on an image and quickly save it to a Picasa Web Album that you choose.
+Right click on an image and quickly save it to a Google+ / Picasa Web Album that you choose.
 
 Common uses:
 - Save your friends' Facebook photos into your own albums
@@ -6,7 +6,7 @@ Common uses:
 - Use along with webpage screenshots (http://goo.gl/r0nt) to archive website UI
 
 
-Copyright 2010, Brett Slatkin
+Copyright 2010-2013, Brett Slatkin
 http://onebigfluke.com
 
 Extension and source licensed under the Apache License, Version 2.0. UsesjQuery UI (MIT/GPL), json2 parser (free domain), and Fred Palmer's Base64 (BSD compat).

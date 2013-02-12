@@ -1,0 +1,58 @@
+body {
+  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+}
+
+#about {
+  max-width: 400px;
+}
+
+/* Pop-up album selection */
+.album-type {
+  margin-bottom: 1em;
+}
+
+.album-list {
+  height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #555;
+}
+.album-list .ui-selecting {
+  background: #FECA40;
+}
+.album-list .ui-selected {
+  background: #F39814;
+  color: #FFFFFF;
+}
+.album-list li {
+  margin: 0;
+  padding: 5px;
+  border-top: 1px solid #DDD;
+  border-bottom: 1px solid #BBB;
+  background-color: #EEE;
+  font-size: 0.8em;
+  cursor: pointer;
+}
+
+.album-controls {
+  margin-top: 1em;
+}
+
+/* Connected albums view */
+.album-type-picasa {
+
+}
+.album-section-title {
+
+}
+.add-album-control {
+  margin-top: 1em;
+}
+
+/* other */
+.security-detail {
+  max-width: 400px;
+}
