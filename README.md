@@ -12,7 +12,8 @@ Common uses:
 *   Keep an archive of pics that are about architecture, photography, fashion, etc
 *   Use along with webpage screenshots (http://goo.gl/r0nt) to archive website UI
 
-For help, contact me here: [http://a.quil.la/YHLS6](http://a.quil.la/YHLS6)
+For help, contact me here:  
+[http://a.quil.la/YHLS6](http://a.quil.la/YHLS6)
 
 Copyright 2010-2013, Brett Slatkin  
 [http://onebigfluke.com](http://onebigfluke.com)
