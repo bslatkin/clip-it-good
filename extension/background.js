@@ -27,7 +27,7 @@ var OAUTH = ChromeExOAuth.initBackgroundPage({
 // Constants for various album types.
 var PICASA = 'picasa';
 var ALBUM_TYPE_STRING = {
-  'picasa': 'Google+ / Picasa Web Albums'
+  'picasa': 'Google+ Photos'
 };
 
 // Preferences

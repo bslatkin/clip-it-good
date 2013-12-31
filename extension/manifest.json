@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Clip It Good",
-  "version": "0.2.2",
-  "description": "Save webpage clippings and images to Google+ / Picasa Web Albums.",
+  "version": "0.2.3",
+  "description": "Save images from webpages to Google+ Photos",
   "background": {
     "page": "background.html"
   },
