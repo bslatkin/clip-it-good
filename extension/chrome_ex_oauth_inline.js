@@ -1,1 +1,0 @@
-ChromeExOAuth.initCallbackPage();

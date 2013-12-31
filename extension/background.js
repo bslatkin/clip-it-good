@@ -137,7 +137,7 @@ function handleMenuClick(albumName, albumId, data, tab) {
           method: 'POST',
           headers: {
             'Content-Type': 'image/png',
-            'Slug': filename
+            'Slug': filename || 'empty'
           },
           parameters: {
             alt: 'json'
