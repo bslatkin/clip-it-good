@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Clip It Good",
-  "version": "0.3",
+  "version": "0.3.1",
   "description": "Save images and GIFs from webpages to Google+ Photo Albums",
   "background": {
     "page": "background.html"
