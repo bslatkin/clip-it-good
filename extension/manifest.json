@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "Clip It Good",
-  "version": "0.2.3",
-  "description": "Save images from webpages to Google+ Photos",
+  "version": "0.3",
+  "description": "Save images and GIFs from webpages to Google+ Photo Albums",
   "background": {
     "page": "background.html"
   },
@@ -20,7 +20,7 @@
   "page_action": {
     "default_icon": "icon19.png"
     },
-  "minimum_chrome_version": "17.0",
+  "minimum_chrome_version": "29.0",
   "icons": {
       "48": "icon48.png",
       "128": "icon128.png"

@@ -100,25 +100,23 @@ function handleMenuClick(albumName, albumId, data, tab) {
   });
   chrome.pageAction.show(tab.id);
 
-  var img = document.createElement('img');
-  img.onload = function() {
-    var canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    canvas.getContext('2d').drawImage(img, 0, 0);
+  // Picasa doesn't like overly long filenames.
+  var filename = data.srcUrl;
+  if (filename.length > 255) {
+    filename = data.srcUrl.substr(0, 255);
+  }
 
-    // Picasa doesn't like
-    var filename = data.srcUrl;
-    if (filename.length > 255) {
-      filename = data.srcUrl.substr(0, 255);
-    }
+  var get = new XMLHttpRequest();
+  get.responseType = 'blob';
 
-    var dataUrl = canvas.toDataURL();
-    var dataUrlAdjusted = dataUrl.replace('data:image/png;base64,', '');
+  get.onload = function(e) {
+    // if () {
+    //   console.log('Could not fetch image: ' + e);
+    //   alert('Could not fetch image: ' + e);
+    //   return;
+    // }
 
-    var blob = new Blob(
-        [new Uint8Array(Base64.decode(dataUrlAdjusted).buffer)],
-        {type: 'image/png'});
+    var blob = get.response;
 
     function complete(resp, xhr) {
       chrome.pageAction.hide(tab.id);
@@ -126,7 +124,7 @@ function handleMenuClick(albumName, albumId, data, tab) {
         alert('Error: Response status = ' + xhr.status +
               ', response body = "' + xhr.responseText + '"');
       }
-    }  // end complete
+    }
 
     OAUTH.authorize(function() {
       OAUTH.sendSignedRequest(
@@ -146,9 +144,10 @@ function handleMenuClick(albumName, albumId, data, tab) {
         }
       );
     });
-  }  // end onload
+  };
 
-  img.src = data.srcUrl;
+  get.open("get", data.srcUrl);
+  get.send();
 }
 
 function firstTimeOptions() {
