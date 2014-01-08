@@ -1,5 +1,5 @@
 body {
-  font-family: "Lucida Sans Unicode", "Lucida Grande", sans-serif;
+  font-family: "Trebuchet MS", Helvetica, Arial, sans-serif;
 }
 
 #about {
@@ -49,10 +49,21 @@ body {
 
 }
 .add-album-control {
-  margin-top: 1em;
+  margin: 2em 0;
+}
+
+.add-album-control button {
+  width: 300px;
+  height: 50px;
+  font-size: 24px;
 }
 
 /* other */
 .security-detail {
   max-width: 400px;
+}
+
+/* Don't show the title bar for the loading dialog. */
+.loading-dialog .ui-dialog-titlebar {
+  display: none;
 }

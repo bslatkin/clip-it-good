@@ -114,21 +114,40 @@ function picasaListAlbumsDone(jsonData) {
   renderAlbumSelector(albumIdToName, BG.PICASA);
 }
 
-function addPicasaAlbum() {
-  BG.OAUTH.authorize(function() {
-    BG.OAUTH.sendSignedRequest(
-      'http://picasaweb.google.com/data/feed/api/user/default',
-      function(resp, xhr) {
-        if (!(xhr.status >= 200 && xhr.status <= 299)) {
-          alert('Error: Response status = ' + xhr.status +
-                ', response body = "' + xhr.responseText + '"');
-          return;
-        }
-        var jsonResponse = $.parseJSON(resp);
-        picasaListAlbumsDone(jsonResponse);
-      },
-      {method: 'GET', parameters: {'alt': 'json'}})
+function showLoading() {
+  var loadingDiv = $('#loading-dialog');
+  loadingDiv.dialog({
+    modal: true,
+    resizable: false,
+    minHeight: 0,
+    minWidth: 0,
+    closeOnEscape: false,
+    draggable: false,
+    resizable: false,
+    dialogClass: 'loading-dialog',
   });
+  return loadingDiv;
+}
+
+function addPicasaAlbum() {
+  var dialog = showLoading();
+  window.setTimeout(function() {
+    BG.OAUTH.authorize(function() {
+      BG.OAUTH.sendSignedRequest(
+        'http://picasaweb.google.com/data/feed/api/user/default',
+        function(resp, xhr) {
+          if (!(xhr.status >= 200 && xhr.status <= 299)) {
+            alert('Error: Response status = ' + xhr.status +
+                  ', response body = "' + xhr.responseText + '"');
+            return;
+          }
+          var jsonResponse = $.parseJSON(resp);
+          $(dialog).dialog('close');
+          picasaListAlbumsDone(jsonResponse);
+        },
+        {method: 'GET', parameters: {'alt': 'json'}})
+    });
+  }, 0);
 }
 
 $(document).ready(function() {

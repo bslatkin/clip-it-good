@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-  <title>Clip It Good: Configure options</title>
+  <title>Clip It Good: Options</title>
   <link rel="stylesheet" href="jquery-ui-1.10.0.custom.css" type="text/css">
   <link rel="stylesheet" type="text/css" href="options.css">
   <script type="text/javascript" src="jquery-1.9.1.js"></script>
@@ -13,11 +13,7 @@
 </head>
 <body>
 
-<h1>Clip It Good: Configure options</h1>
-
-<div id="connected-list">
-  Loading...
-</div>
+<h1>Clip It Good: Options</h1>
 
 <div class="add-album-control">
   <button id="add-picasa" type="button">Add Album</button>
@@ -32,7 +28,7 @@ Connecting an album to <em>Clip It Good</em> will require giving this extension 
 <div id="about">
   <img src="icon128.png"/>
   <p>
-     Brett Slatkin, &copy;2010-2013
+     Brett Slatkin, &copy; 2010-2014
      <br>
     <a href="http://a.quil.la/YHLS6">Contact me! Get help.</a>
   </p>
@@ -49,6 +45,10 @@ Connecting an album to <em>Clip It Good</em> will require giving this extension 
   <div class="album-type"></div>
   <ol class="album-list"></ol>
   <div class="album-controls">Drag to select multiple or click while holding Control/&#x2318; for specific items.</div>
+</div>
+
+<div id="loading-dialog" style="display: none;">
+  <h3 align="center">Loading...</h3>
 </div>
 
 </body>

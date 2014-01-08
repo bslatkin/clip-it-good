@@ -265,11 +265,14 @@ ChromeExOAuth.initCallbackPage = function() {
   var oauth = ChromeExOAuth.fromConfig(oauth_config);
   background_page.chromeExOAuthRedirectStarted = true;
   oauth.initOAuthFlow(function (token, secret) {
-    background_page.chromeExOAuthOnAuthorize(token, secret);
-    background_page.chromeExOAuthRedirectStarted = false;
-    chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
-      chrome.tabs.remove(tabs[0].id);
-    });
+    // Only do token acquiring on first run.
+    if (background_page.chromeExOAuthOnAuthorize) {
+      background_page.chromeExOAuthOnAuthorize(token, secret);
+      background_page.chromeExOAuthRedirectStarted = false;
+      chrome.tabs.query({active: true, currentWindow: true}, function (tabs) {
+        chrome.tabs.remove(tabs[0].id);
+      });
+    }
   });
 };
 
