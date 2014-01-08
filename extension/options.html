@@ -2,10 +2,10 @@
 <html>
 <head>
   <title>Clip It Good: Options</title>
-  <link rel="stylesheet" href="jquery-ui-1.10.0.custom.css" type="text/css">
+  <link rel="stylesheet" href="jquery-ui-1.10.3.custom.css" type="text/css">
   <link rel="stylesheet" type="text/css" href="options.css">
   <script type="text/javascript" src="jquery-1.9.1.js"></script>
-  <script type="text/javascript" src="jquery-ui-1.10.0.custom.js"></script>
+  <script type="text/javascript" src="jquery-ui-1.10.3.custom.js"></script>
   <script type="text/javascript" src="chrome_ex_oauthsimple.js"></script>
   <script type="text/javascript" src="chrome_ex_oauth.js"></script>
   <script type="text/javascript" src="onload.js"></script>
@@ -18,7 +18,11 @@
 <div id="connected-list"></div>
 
 <div class="add-album-control">
-  <button id="add-picasa" type="button">Add Album</button>
+  <button id="add-picasa" type="button">Add Existing Album</button>
+  <br><br>
+  <button id="create-picasa" type="button">Create New Album</button>
+  <br><br>
+  <a href="https://plus.google.com/photos" target="_blank">View Google+ Photo Albums</a>
 </div>
 
 <h2>Security information</h2>
@@ -51,6 +55,12 @@ Connecting an album to <em>Clip It Good</em> will require giving this extension 
 
 <div id="loading-dialog" style="display: none;">
   <h3 align="center">Loading...</h3>
+</div>
+
+<div id="create-picasa-dialog" style="display: none;">
+  <label for="new-album-name">Name:</label>
+  <br>
+  <input type="text" id="new-album-name">
 </div>
 
 </body>

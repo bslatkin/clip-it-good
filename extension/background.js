@@ -90,6 +90,19 @@ function setupMenus() {
         });
       });
     });
+
+    // Allow the user to quickly get to the options page.
+    chrome.contextMenus.create({
+      type: 'separator',
+      contexts: ['image']
+    });
+    chrome.contextMenus.create({
+      title: 'Options\u2026',
+      contexts: ['image'],
+      onclick: function() {
+        chrome.tabs.create({url: 'options.html'})
+      }
+    });
   });
 }
 

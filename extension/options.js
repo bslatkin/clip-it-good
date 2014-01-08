@@ -39,7 +39,7 @@ function populateAlbumList() {
       var album = $('<li class="connected-album">');
       album.attr('album-id', albumDict['id']);
       album.text(albumDict['name'] + ' ');
-      var removeLink = $('<a href="">').text('(Remove)');
+      var removeLink = $('<a class="disconnect" href="">').text('Disconnect');
       removeLink.click(function(event) {
         delete BG.ALBUM_CONFIG[albumType][albumDict['id']];
         if ($.isEmptyObject(BG.ALBUM_CONFIG[albumType])) {
@@ -60,6 +60,19 @@ function populateAlbumList() {
 
     connectedAlbums.append(albumSection);
   });
+}
+
+function saveAlbum(albumType, albumId, albumName) {
+  if (!BG.ALBUM_CONFIG[albumType]) {
+    BG.ALBUM_CONFIG[albumType] = {};
+  }
+  BG.ALBUM_CONFIG[albumType][albumId] = albumName;
+}
+
+function refreshAlbums() {
+  BG.saveAlbumConfig();
+  populateAlbumList();
+  BG.setupMenus();
 }
 
 // Generic album selection
@@ -87,15 +100,9 @@ function renderAlbumSelector(albumIdToName, albumType) {
       'Add': function() {
         var selectedAlbums = $('#select-album>.album-list>.ui-selected');
         $.each(selectedAlbums, function(index, item) {
-          if (!BG.ALBUM_CONFIG[albumType]) {
-            BG.ALBUM_CONFIG[albumType] = {};
-          }
-          BG.ALBUM_CONFIG[albumType][$(item).attr('album-id')] =
-              $(item).text();
+          saveAlbum(albumType, $(item).attr('album-id'), $(item).text());
         });
-        BG.saveAlbumConfig();
-        populateAlbumList();
-        BG.setupMenus();
+        refreshAlbums();
         $(this).dialog('close');
       },
       'Cancel': function() {
@@ -150,7 +157,75 @@ function addPicasaAlbum() {
   }, 0);
 }
 
+function getCreateAlbumXML(albumName) {
+  var escaped = $('<div>').text(albumName).html();
+  return "<?xml version='1.0' encoding='UTF-8'?>\n" +
+    "<entry xmlns='http://www.w3.org/2005/Atom'>\n" +
+    "<title type='text'>" + escaped + "</title>\n" +
+    "<category scheme='http://schemas.google.com/g/2005#kind' " +
+    "term='http://schemas.google.com/photos/2007#album'></category>\n" +
+    "</entry>\n";
+}
+
+function createPicasaAlbumDone(jsonData) {
+  var entryData = jsonData.entry;
+  var albumId = entryData['gphoto$id']['$t'];
+  var albumName = entryData.title['$t'];
+  saveAlbum(BG.PICASA, albumId, albumName);
+  refreshAlbums();
+}
+
+function createPicasaAlbum(albumName) {
+  var dialog = showLoading();
+  window.setTimeout(function() {
+    BG.OAUTH.authorize(function() {
+      BG.OAUTH.sendSignedRequest(
+        'http://picasaweb.google.com/data/feed/api/user/default',
+        function(resp, xhr) {
+          if (!(xhr.status >= 200 && xhr.status <= 299)) {
+            alert('Error: Response status = ' + xhr.status +
+                  ', response body = "' + xhr.responseText + '"');
+            return;
+          }
+          var jsonResponse = $.parseJSON(resp);
+          createPicasaAlbumDone(jsonResponse);
+          $(dialog).dialog('close');
+        },
+        {
+          method: 'POST',
+          headers: {'Content-Type': 'application/atom+xml'},
+          parameters: {'alt': 'json'},
+          body: getCreateAlbumXML(albumName)
+        });
+    });
+  }, 0);
+
+}
+
+function showCreatePicasaAlbumDialog() {
+  $('#new-album-name').val('');  // Clear it
+  $('#create-picasa-dialog').dialog({
+    modal: true,
+    resizable: false,
+    width: 550,
+    title: 'Create new album',
+    buttons: {
+      'Create': function() {
+        var name = $('#new-album-name').val();
+        $(this).dialog('close');
+        createPicasaAlbum(name);
+      },
+      'Cancel': function() {
+        $(this).dialog('close');
+      }
+    }
+  });
+
+}
+
 $(document).ready(function() {
   $('#add-picasa').click(addPicasaAlbum);
+  $('#create-picasa').click(showCreatePicasaAlbumDialog);
+
   populateAlbumList();
 });
