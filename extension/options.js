@@ -141,7 +141,7 @@ function addPicasaAlbum() {
   window.setTimeout(function() {
     BG.OAUTH.authorize(function() {
       BG.OAUTH.sendSignedRequest(
-        'http://picasaweb.google.com/data/feed/api/user/default',
+        'https://picasaweb.google.com/data/feed/api/user/default',
         function(resp, xhr) {
           if (!(xhr.status >= 200 && xhr.status <= 299)) {
             alert('Error: Response status = ' + xhr.status +
@@ -180,7 +180,7 @@ function createPicasaAlbum(albumName) {
   window.setTimeout(function() {
     BG.OAUTH.authorize(function() {
       BG.OAUTH.sendSignedRequest(
-        'http://picasaweb.google.com/data/feed/api/user/default',
+        'https://picasaweb.google.com/data/feed/api/user/default',
         function(resp, xhr) {
           if (!(xhr.status >= 200 && xhr.status <= 299)) {
             alert('Error: Response status = ' + xhr.status +
