@@ -15,7 +15,7 @@ Common uses:
 
 The extension will require you to log into your Google Account a single time, but it will *not* prompt you for your password. Clip It Good uses third-party authorization (OAuth) to ensure your albums are secure.
 
-While the Clip It Good is uploading its icon will show in the URL bar.
+While the Clip It Good is uploading its icon will show in the URL bar. The page the image appeared on and the image's original URL will be set as the image's description in the photo album you save it to.
 
 For help, contact me here:
 [http://a.quil.la/YHLS6](http://a.quil.la/YHLS6)
