@@ -1,21 +1,21 @@
 {
   "manifest_version": 2,
   "name": "Clip It Good",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Save images and GIFs from webpages to Google+ Photo Albums",
   "background": {
     "page": "background.html"
   },
   "options_page": "options.html",
   "permissions": [
+      "contextMenus",
+      "identity",
       "tabs",
       "http://*/*",
       "https://*/*",
-      "https://www.google.com/accounts/OAuthGetRequestToken",
-      "https://www.google.com/accounts/OAuthAuthorizeToken",
-      "https://www.google.com/accounts/OAuthGetAccessToken",
       "https://picasaweb.google.com/data/*",
-      "contextMenus"
+      "https://accounts.google.com/*",
+      "https://www.googleapis.com/*"
       ],
   "page_action": {
     "default_icon": "icon19.png"
@@ -27,5 +27,12 @@
   },
   "web_accessible_resources": [
     "options.html"
-  ]
+  ],
+  "oauth2": {
+    "client_id": "747572502910-km5k9m629tto6fke6tqrqukoa9qf4kd3.apps.googleusercontent.com",
+    "scopes": [
+      "http://picasaweb.google.com/data/"
+    ]
+  },
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDe0SKWQD6nIkDpUT/VCsU/gQmew48rMg2KI9DF+MLPhNezBQu3SdNAh1tdx/yt3c+OP3/z2viJs9io3PgISSZPi5oSdhlYb7elr49b2Nnr5Izy3JmyxS9SH7CcrcOvc0Ao/aOlcmR/DFvyQjcyWkGp90bwxrlibArRvumQVQe3SQIDAQAB"
 }

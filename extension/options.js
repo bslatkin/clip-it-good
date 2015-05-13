@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 Brett Slatkin
+ * Copyright 2010-2015 Brett Slatkin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,9 +113,13 @@ function renderAlbumSelector(albumIdToName, albumType) {
 }
 
 // Picasa-specific album selection
-function picasaListAlbumsDone(jsonData) {
+function picasaListAlbumsDone(context, xhr) {
+  if (!isXhrOk(context, xhr)) {
+    return;
+  }
+  var responseJSON = $.parseJSON(xhr.responseText);
   var albumIdToName = {};
-  $.each(jsonData.feed.entry, function(index, entryData) {
+  $.each(responseJSON.feed.entry, function(index, entryData) {
     albumIdToName[entryData['gphoto$id']['$t']] = entryData.title['$t'];
   });
   renderAlbumSelector(albumIdToName, BG.PICASA);
@@ -136,23 +140,39 @@ function showLoading() {
   return loadingDiv;
 }
 
+function isXhrOk(context, xhr) {
+    if (!(xhr.status >= 200 && xhr.status <= 299)) {
+      alert('Error: Response status = ' + xhr.status +
+            ', response body = "' + xhr.responseText + '"');
+      chrome.identity.removeCachedAuthToken({'token': authToken});
+      return false;
+  }
+  return true;
+}
+
 function addPicasaAlbum() {
   var dialog = showLoading();
+
   window.setTimeout(function() {
-    BG.OAUTH.authorize(function() {
-      BG.OAUTH.sendSignedRequest(
-        'https://picasaweb.google.com/data/feed/api/user/default',
-        function(resp, xhr) {
-          if (!(xhr.status >= 200 && xhr.status <= 299)) {
-            alert('Error: Response status = ' + xhr.status +
-                  ', response body = "' + xhr.responseText + '"');
-            return;
-          }
-          var jsonResponse = $.parseJSON(resp);
-          $(dialog).dialog('close');
-          picasaListAlbumsDone(jsonResponse);
-        },
-        {method: 'GET', parameters: {'alt': 'json'}})
+    chrome.identity.getAuthToken({'interactive': true}, function(accessToken) {
+      context = {accessToken: accessToken};
+
+      function complete(xhr) {
+        $(dialog).dialog('close');
+        picasaListAlbumsDone(context, xhr);
+      }
+
+      $.ajax(
+        'https://picasaweb.google.com/data/feed/api/user/default?alt=json',
+        {
+          complete: complete,
+          error: complete,
+          headers: {
+            'Authorization': 'Bearer ' + context.accessToken
+          },
+          method: 'GET'
+        }
+      );
     });
   }, 0);
 }
@@ -167,8 +187,12 @@ function getCreateAlbumXML(albumName) {
     "</entry>\n";
 }
 
-function createPicasaAlbumDone(jsonData) {
-  var entryData = jsonData.entry;
+function createPicasaAlbumDone(context, xhr) {
+  if (!isXhrOk(context, xhr)) {
+    return;
+  }
+  var responseJSON = $.parseJSON(xhr.responseText);
+  var entryData = responseJSON.entry;
   var albumId = entryData['gphoto$id']['$t'];
   var albumName = entryData.title['$t'];
   saveAlbum(BG.PICASA, albumId, albumName);
@@ -177,26 +201,29 @@ function createPicasaAlbumDone(jsonData) {
 
 function createPicasaAlbum(albumName) {
   var dialog = showLoading();
+
   window.setTimeout(function() {
-    BG.OAUTH.authorize(function() {
-      BG.OAUTH.sendSignedRequest(
-        'https://picasaweb.google.com/data/feed/api/user/default',
-        function(resp, xhr) {
-          if (!(xhr.status >= 200 && xhr.status <= 299)) {
-            alert('Error: Response status = ' + xhr.status +
-                  ', response body = "' + xhr.responseText + '"');
-            return;
-          }
-          var jsonResponse = $.parseJSON(resp);
-          createPicasaAlbumDone(jsonResponse);
-          $(dialog).dialog('close');
-        },
+    chrome.identity.getAuthToken({'interactive': true}, function(accessToken) {
+      context = {accessToken: accessToken};
+
+      function complete(xhr) {
+        $(dialog).dialog('close');
+        createPicasaAlbumDone(context, xhr);
+      }
+
+      $.ajax(
+        'https://picasaweb.google.com/data/feed/api/user/default?alt=json',
         {
-          method: 'POST',
-          headers: {'Content-Type': 'application/atom+xml'},
-          parameters: {'alt': 'json'},
-          body: getCreateAlbumXML(albumName)
-        });
+          complete: complete,
+          contentType: 'application/atom+xml',
+          data: getCreateAlbumXML(albumName),
+          error: complete,
+          headers: {
+            'Authorization': 'Bearer ' + context.accessToken
+          },
+          method: 'POST'
+        }
+      );
     });
   }, 0);
 

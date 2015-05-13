@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2014 Brett Slatkin
+ * Copyright 2010-2015 Brett Slatkin
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,16 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-var OAUTH = ChromeExOAuth.initBackgroundPage({
-  'request_url' : 'https://www.google.com/accounts/OAuthGetRequestToken',
-  'authorize_url' : 'https://www.google.com/accounts/OAuthAuthorizeToken',
-  'access_url' : 'https://www.google.com/accounts/OAuthGetAccessToken',
-  'consumer_key' : 'anonymous',
-  'consumer_secret' : 'anonymous',
-  'scope' : 'http://picasaweb.google.com/data/',
-  'app_name' : 'Clip It Good: Chrome Extension'
-});
 
 // Constants for various album types.
 var PICASA = 'picasa';
@@ -60,6 +50,16 @@ function getSortedAlbums(albumIdNameDict) {
     }
   });
   return albumIdNameArray;
+}
+
+function isXhrOk(context, xhr) {
+    if (!(xhr.status >= 200 && xhr.status <= 299)) {
+      alert('Error: Response status = ' + xhr.status +
+            ', response body = "' + xhr.responseText + '"');
+      chrome.identity.removeCachedAuthToken({'token': context.accessToken});
+      return false;
+  }
+  return true;
 }
 
 function setupMenus() {
@@ -114,54 +114,51 @@ function getEditDescriptionXML(description) {
     "</entry>\n";
 }
 
-function handleSaveDescriptionDone(context, resp, xhr) {
+function handleSaveDescriptionDone(context, xhr) {
   chrome.pageAction.hide(context.tab.id);
-  if (!(xhr.status >= 200 && xhr.status <= 299)) {
-    alert('Error: Response status = ' + xhr.status +
-          ', response body = "' + xhr.responseText + '"');
+  if (!isXhrOk(context, xhr)) {
     return;
   }
 }
 
-function handleUploadDone(context, resp, xhr) {
-  if (!(xhr.status >= 200 && xhr.status <= 299)) {
-    alert('Error: Response status = ' + xhr.status +
-          ', response body = "' + xhr.responseText + '"');
+function handleUploadDone(context, xhr) {
+  if (!isXhrOk(context, xhr)) {
     return;
   }
-  var jsonResponse = $.parseJSON(resp);
-  var photoId = jsonResponse.entry['gphoto$id']['$t'];
 
-  function complete(resp, xhr) {
-    handleSaveDescriptionDone(context, resp, xhr);
+  var responseJSON = $.parseJSON(xhr.responseText);
+  var photoId = responseJSON.entry['gphoto$id']['$t'];
+
+  function complete(xhr) {
+    handleSaveDescriptionDone(context, xhr);
   }
 
-  OAUTH.authorize(function() {
-    OAUTH.sendSignedRequest(
-      'https://picasaweb.google.com/data/entry/api/user/default/albumid/' +
-      context.albumId + '/photoid/' + photoId,
-      complete,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/xml',
-          'GData-Version': '2',
-          'If-Match': '*'
-        },
-        parameters: {alt: 'json'},
-        body: getEditDescriptionXML(
-          'Page: ' + context.pageUrl + '\nImage: ' + context.url)
-      }
-    );
-  });
+  $.ajax(
+    'https://picasaweb.google.com/data/entry/api/user/default/albumid/' +
+    context.albumId + '/photoid/' + photoId + '?alt=json',
+    {
+      complete: complete,
+      contentType: 'application/xml',
+      data: getEditDescriptionXML(
+          'Page: ' + context.pageUrl + '\nImage: ' + context.url),
+      dataType: 'json',
+      error: complete,
+      headers: {
+        'Authorization': 'Bearer ' + context.accessToken,
+        'GData-Version': '2',
+        'If-Match': '*'
+      },
+      method: 'PATCH'
+    }
+  );
 }
 
-function handleFetchDone(context, resp, xhr) {
-  if (!(xhr.status >= 200 && xhr.status <= 299)) {
-    alert('Error: Response status = ' + xhr.status +
-          ', response body = "' + xhr.responseText + '"');
+function handleFetchDone(context, xhr) {
+  if (!isXhrOk(context, xhr)) {
     return;
   }
+
+  var blob = xhr.response;
 
   // Picasa doesn't like overly long slugs. It will only keep the last
   // part of the URL as the image name.
@@ -170,28 +167,24 @@ function handleFetchDone(context, resp, xhr) {
     slug = context.url.substr(0, 255);
   }
 
-  var complete = function(resp, xhr) {
-    handleUploadDone(context, resp, xhr);
+  // Use the XHR API directly so we can get Blob values.
+  // jQuery doesn't support blobs: http://bugs.jquery.com/ticket/11461
+  var upload = new XMLHttpRequest();
+
+  var complete = function() {
+    handleUploadDone(context, upload);
   }
 
-  OAUTH.authorize(function() {
-    OAUTH.sendSignedRequest(
+  upload.onload = complete;
+  upload.onerror = complete;
+  upload.open(
+      'post',
       'https://picasaweb.google.com/data/feed/api/' +
-      'user/default/albumid/' + context.albumId,
-      complete,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'image/png',
-          'Slug': slug || 'empty'
-        },
-        parameters: {
-          alt: 'json'
-        },
-        body: resp
-      }
-    );
-  });
+      'user/default/albumid/' + context.albumId + '?alt=json');
+  upload.setRequestHeader('Authorization', 'Bearer ' + context.accessToken);
+  upload.setRequestHeader('Content-Type', 'image/png');
+  upload.setRequestHeader('Slug', slug || 'empty');
+  upload.send(blob);
 }
 
 function handleMenuClick(albumName, albumId, data, tab) {
@@ -209,17 +202,23 @@ function handleMenuClick(albumName, albumId, data, tab) {
     url: data.srcUrl
   };
 
-  var xhr = new XMLHttpRequest();
-  xhr.responseType = 'blob';
-  xhr.onload = function() {
-    handleFetchDone(context, xhr.response, xhr);
-  };
-  xhr.onerror = function(e) {
-    console.log('Could not fetch image: ' + e);
-    alert('Could not fetch image: ' + e);
-  };
-  xhr.open("get", context.url);
-  xhr.send();
+  chrome.identity.getAuthToken({'interactive': true}, function(accessToken) {
+    context.accessToken = accessToken;
+
+    // Use the XHR API directly so we can get Blob values.
+    // jQuery doesn't support blobs: http://bugs.jquery.com/ticket/11461
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = 'blob';
+    xhr.onload = function() {
+      handleFetchDone(context, xhr);
+    };
+    xhr.onerror = function(e) {
+      console.log('Could not fetch image: ' + e);
+      alert('Could not fetch image: ' + e);
+    };
+    xhr.open('get', context.url);
+    xhr.send();
+  });
 }
 
 function firstTimeOptions() {
@@ -231,7 +230,7 @@ function firstTimeOptions() {
   chrome.tabs.create({url: 'options.html'});
 }
 
-$(document).ready( function() {
+$(document).ready(function() {
   setupMenus();
   firstTimeOptions();
 });
