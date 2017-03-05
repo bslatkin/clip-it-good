@@ -17,7 +17,7 @@
 // Constants for various album types.
 var PICASA = 'picasa';
 var ALBUM_TYPE_STRING = {
-  'picasa': 'Google+ Photo Albums'
+  'picasa': 'Google Photo Albums'
 };
 
 // Preferences
@@ -106,51 +106,75 @@ function setupMenus() {
   });
 }
 
-function getEditDescriptionXML(description) {
-  var escaped = $('<div>').text(description).html();
+function escapeHtml(string) {
+  return $('<div>').text(string).html();
+}
+
+function getSlug(string) {
+  // Picasa doesn't like overly long slugs. It will only keep the last
+  // part of the URL as the image name.
+  if (string.length > 255) {
+    return string.substr(0, 255);
+  }
+  return string || 'Empty';
+}
+
+function getDescriptionXML(imageUrl, hostPage) {
   return "<?xml version='1.0' encoding='UTF-8'?>\n" +
     "<entry xmlns='http://www.w3.org/2005/Atom'>\n" +
-    "<summary>" + escaped + "</summary>\n" +
+    "<title>" + escapeHtml(getSlug(imageUrl)) + "</title>\n" +
+    "<summary>" +
+    "Page: " + escapeHtml(hostPage) + "\n\n" +
+    "Image: " + escapeHtml(imageUrl) + "</summary>\n" +
+    "<category scheme='http://schemas.google.com/g/2005#kind'" +
+    " term='http://schemas.google.com/photos/2007#photo'/>\n" +
     "</entry>\n";
 }
 
-function handleSaveDescriptionDone(context, xhr) {
+function handleUploadDone(context, xhr) {
   chrome.pageAction.hide(context.tab.id);
   if (!isXhrOk(context, xhr)) {
     return;
   }
 }
 
-function handleUploadDone(context, xhr) {
-  if (!isXhrOk(context, xhr)) {
-    return;
+function getBlobByteArray(blob, callback) {
+  var reader = new FileReader();
+  reader.onloadend = function() {
+    var array = reader.result;
+    var byteArray = new Uint8Array(array);
+    callback(byteArray);
   }
+  reader.readAsArrayBuffer(blob);
+}
 
-  var responseJSON = $.parseJSON(xhr.responseText);
-  var photoId = responseJSON.entry['gphoto$id']['$t'];
+var mimeBoundary = 'my-fun-boundary-72934095605-48238';
 
-  function complete(xhr) {
-    handleSaveDescriptionDone(context, xhr);
-  }
+// Sad implementation of https://tools.ietf.org/html/rfc2387
+function getMultipartRelated(context, blobType, blobByteArray) {
+  var crlf = '\r\n';
+  var delimiter = '--';
 
-  $.ajax(
-    'https://picasaweb.google.com/data/entry/api/user/default/albumid/' +
-    context.albumId + '/photoid/' + photoId + '?alt=json',
-    {
-      complete: complete,
-      contentType: 'application/xml',
-      data: getEditDescriptionXML(
-          'Page: ' + context.pageUrl + '\nImage: ' + context.url),
-      dataType: 'json',
-      error: complete,
-      headers: {
-        'Authorization': 'Bearer ' + context.accessToken,
-        'GData-Version': '2',
-        'If-Match': '*'
-      },
-      method: 'PATCH'
-    }
-  );
+  var boundaryStart = delimiter + mimeBoundary + crlf;
+  var boundaryEnd = delimiter + mimeBoundary + delimiter;
+
+  var data = [
+    'Media multipart posting' + crlf,
+    boundaryStart,
+    'Content-Type: application/atom+xml' + crlf,
+    crlf,
+    getDescriptionXML(context.url, context.pageUrl),
+    crlf,
+    boundaryStart,
+    'Content-Type: ' + blobType + crlf,
+    'Content-Transfer-Encoding: base64' + crlf,
+    crlf,
+    blobByteArray,
+    crlf,
+    boundaryEnd
+  ];
+
+  return new Blob(data);
 }
 
 function handleFetchDone(context, xhr) {
@@ -159,32 +183,33 @@ function handleFetchDone(context, xhr) {
   }
 
   var blob = xhr.response;
+  getBlobByteArray(blob, function(byteArray) {
+    handleBlobReadDone(context, blob, byteArray);
+  });
+}
 
-  // Picasa doesn't like overly long slugs. It will only keep the last
-  // part of the URL as the image name.
-  var slug = context.url;
-  if (slug.length > 255) {
-    slug = context.url.substr(0, 255);
+function handleBlobReadDone(context, blob, blobByteArray) {
+  var complete = function(xhr) {
+    handleUploadDone(context, xhr);
   }
 
-  // Use the XHR API directly so we can get Blob values.
-  // jQuery doesn't support blobs: http://bugs.jquery.com/ticket/11461
-  var upload = new XMLHttpRequest();
+  var data = getMultipartRelated(context, blob.type, blobByteArray);
 
-  var complete = function() {
-    handleUploadDone(context, upload);
-  }
-
-  upload.onload = complete;
-  upload.onerror = complete;
-  upload.open(
-      'post',
-      'https://picasaweb.google.com/data/feed/api/' +
-      'user/default/albumid/' + context.albumId + '?alt=json');
-  upload.setRequestHeader('Authorization', 'Bearer ' + context.accessToken);
-  upload.setRequestHeader('Content-Type', 'image/png');
-  upload.setRequestHeader('Slug', slug || 'empty');
-  upload.send(blob);
+  $.ajax({
+    url: 'https://picasaweb.google.com/data/feed/api/' +
+         'user/default/albumid/' + context.albumId + '?alt=json',
+    data: data,
+    cache: false,
+    contentType: 'multipart/related; boundary=' + mimeBoundary,
+    processData: false,
+    type: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + context.accessToken,
+      'MIME-version': '1.0'
+    },
+    complete: complete,
+    error: complete,
+  });
 }
 
 function handleMenuClick(albumName, albumId, data, tab) {

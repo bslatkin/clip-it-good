@@ -177,82 +177,8 @@ function addPicasaAlbum() {
   }, 0);
 }
 
-function getCreateAlbumXML(albumName) {
-  var escaped = $('<div>').text(albumName).html();
-  return "<?xml version='1.0' encoding='UTF-8'?>\n" +
-    "<entry xmlns='http://www.w3.org/2005/Atom'>\n" +
-    "<title type='text'>" + escaped + "</title>\n" +
-    "<category scheme='http://schemas.google.com/g/2005#kind' " +
-    "term='http://schemas.google.com/photos/2007#album'></category>\n" +
-    "</entry>\n";
-}
-
-function createPicasaAlbumDone(context, xhr) {
-  if (!isXhrOk(context, xhr)) {
-    return;
-  }
-  var responseJSON = $.parseJSON(xhr.responseText);
-  var entryData = responseJSON.entry;
-  var albumId = entryData['gphoto$id']['$t'];
-  var albumName = entryData.title['$t'];
-  saveAlbum(BG.PICASA, albumId, albumName);
-  refreshAlbums();
-}
-
-function createPicasaAlbum(albumName) {
-  var dialog = showLoading();
-
-  window.setTimeout(function() {
-    chrome.identity.getAuthToken({'interactive': true}, function(accessToken) {
-      context = {accessToken: accessToken};
-
-      function complete(xhr) {
-        $(dialog).dialog('close');
-        createPicasaAlbumDone(context, xhr);
-      }
-
-      $.ajax(
-        'https://picasaweb.google.com/data/feed/api/user/default?alt=json',
-        {
-          complete: complete,
-          contentType: 'application/atom+xml',
-          data: getCreateAlbumXML(albumName),
-          error: complete,
-          headers: {
-            'Authorization': 'Bearer ' + context.accessToken
-          },
-          method: 'POST'
-        }
-      );
-    });
-  }, 0);
-
-}
-
-function showCreatePicasaAlbumDialog() {
-  $('#new-album-name').val('');  // Clear it
-  $('#create-picasa-dialog').dialog({
-    modal: true,
-    resizable: false,
-    width: 550,
-    title: 'Create new album',
-    buttons: {
-      'Create': function() {
-        var name = $('#new-album-name').val();
-        $(this).dialog('close');
-        createPicasaAlbum(name);
-      },
-      'Cancel': function() {
-        $(this).dialog('close');
-      }
-    }
-  });
-
-}
-
 $(document).ready(function() {
   $('#add-picasa').click(addPicasaAlbum);
-  $('#create-picasa').click(showCreatePicasaAlbumDialog);
 
   populateAlbumList();
 });

@@ -63,16 +63,6 @@ body {
   content: ')';
 }
 
-/* Create new album view. */
-#create-picasa-dialog input {
-  width: 100%;
-}
-
-#create-picasa-dialog input,
-#create-picasa-dialog label {
-  font-size: 18px;
-}
-
 /* other */
 .security-detail {
   max-width: 400px;
