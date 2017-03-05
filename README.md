@@ -4,7 +4,7 @@ Clip It Good
 Install it here:
 [https://chrome.google.com/webstore/detail/clip-it-good/aimbcenmfmipmcllpgajennfdfmmhmjj](https://chrome.google.com/webstore/detail/clip-it-good/aimbcenmfmipmcllpgajennfdfmmhmjj)
 
-**Save images and GIFs from webpages to Google+ Photo Albums**
+**Save images and GIFs from webpages to Google Photo Albums**
 
 Common uses:
 
@@ -20,7 +20,7 @@ While the Clip It Good is uploading its icon will show in the URL bar. The page 
 For help, contact me here:
 [http://a.quil.la/YHLS6](http://a.quil.la/YHLS6)
 
-Copyright 2010-2015, Brett Slatkin
+Copyright 2010-2017, Brett Slatkin
 [http://onebigfluke.com](http://onebigfluke.com)
 
-Extension and source licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html). Uses jQuery UI (MIT/GPL).
+Extension and source licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html). Uses jQuery (MIT) and jQuery UI (MIT/GPL).
